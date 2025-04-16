@@ -13,7 +13,7 @@ public sealed class User : Entity
   public string? username { get; private set; }
   public string password_hash { get; private set; }
   public string email { get; private set; }
-  public string phone_number { get; private set; }
+  public string? phone_number { get; private set; }
   public string full_name { get; private set; }
   public DateTime? date_of_birth { get; private set; }
   public Gender gender { get; private set; }
