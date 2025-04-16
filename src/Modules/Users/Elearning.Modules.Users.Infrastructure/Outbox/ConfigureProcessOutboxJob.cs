@@ -1,0 +1,1 @@
+namespace Elearning.Modules.Users.Infrastructure.Outbox;

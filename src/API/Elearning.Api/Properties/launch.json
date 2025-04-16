@@ -1,0 +1,70 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "e-learning-api",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/e-learning-system/src/API/Elearning.Api/bin/Debug/net8.0/Elearning.API.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/e-learning-system/src/API/Elearning.Api",
+            "console": "internalConsole",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+                "uriFormat": "%s/swagger"
+            }
+        },
+        {
+            "name": "API",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-api",
+            "program": "${workspaceFolder}/e-learning-system/src/API/Elearning.Api/bin/Debug/net8.0/Elearning.API.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/e-learning-system/src/API/Elearning.Api",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+                "uriFormat": "%s/swagger"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "ASPNETCORE_URLS": "https://localhost:7296;http://localhost:5093"
+            }
+        },
+        {
+            "name": "Gateway",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-gateway",
+            "program": "${workspaceFolder}/e-learning-gateway-yarp/bin/Debug/net9.0/e-learning-gateway-yarp.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/e-learning-gateway-yarp",
+            "stopAtEntry": false,
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "ASPNETCORE_URLS": "https://localhost:7020;http://localhost:8080"
+            }
+        },
+        {
+            "name": "API & Gateway",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-all",
+            "compounds": [
+                "API",
+                "Gateway"
+            ]
+        }
+    ],
+    "compounds": [
+        {
+            "name": "API & Gateway",
+            "configurations": ["API", "Gateway"]
+        }
+    ]
+}

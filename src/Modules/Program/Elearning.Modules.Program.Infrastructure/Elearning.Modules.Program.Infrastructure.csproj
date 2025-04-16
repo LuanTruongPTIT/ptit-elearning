@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference
+      Include="..\..\..\Common\Elearning.Common.Infrastructure\Elearning.Common.Infrastructure.csproj" />
+    <ProjectReference
+      Include="..\..\..\Common\Elearning.Common.Application\Elearning.Common.Application.csproj" />
+    <ProjectReference
+      Include="..\Elearning.Modules.Program.Presentation\Elearning.Modules.Program.Presentation.csproj" />
+    <ProjectReference
+      Include="..\Elearning.Modules.Program.Application\Elearning.Modules.Program.Application.csproj" />
+    <ProjectReference
+      Include="..\Elearning.Modules.Program.Domain\Elearning.Modules.Program.Domain.csproj" />
+    <ProjectReference
+      Include="..\..\..\Common\Elearning.Common.Presentation\Elearning.Common.Presentation.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- <PackageReference Include="AspNetCore.HealthChecks.Rabbitmq" Version="8.0.0" /> -->
+    <PackageReference Include="Dapper" Version="2.1.66" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Quartz.Extensions.Hosting" Version="3.8.1" />
+  </ItemGroup>
+</Project>
