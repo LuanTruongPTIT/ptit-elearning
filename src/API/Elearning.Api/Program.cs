@@ -17,14 +17,6 @@ builder.Host.UseSerilog((context, loggerConfig) => loggerConfig.ReadFrom.Configu
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddEndpointsApiExplorer();
-
-Assembly[] moduleApplicationAssemblies = [
-    Elearning.Modules.Users.Application.AssemblyReference.Assembly,
-    Elearning.Modules.Program.Application.AssemblyReference.Assembly,
-];
-
-builder.Services.AddApplication(moduleApplicationAssemblies);
-// builder.Services.AddSwaggerDocumentation();
 string databaseConnectionString = builder.Configuration.GetConnectionStringOrThrow("Database");
 Console.WriteLine(databaseConnectionString);
 string redisConnectionString = builder.Configuration.GetConnectionStringOrThrow("Cache");
@@ -47,6 +39,14 @@ builder.Services.AddInfrastructure(
     databaseConnectionString,
     redisConnectionString,
     rabbitmqConnectionString);
+Assembly[] moduleApplicationAssemblies = [
+    Elearning.Modules.Users.Application.AssemblyReference.Assembly,
+    Elearning.Modules.Program.Application.AssemblyReference.Assembly,
+];
+
+builder.Services.AddApplication(moduleApplicationAssemblies);
+// builder.Services.AddSwaggerDocumentation();
+
 // builder.Services.AddOpenApi();
 
 builder.Services.AddHealthChecks()
@@ -95,7 +95,8 @@ app.MapHealthChecks("health", new HealthCheckOptions
 // build
 app.UseLogContext();
 app.UseSerilogRequestLogging();
-
+app.UseAuthentication(); // Add this
+app.UseAuthorization(); // Add this
 app.UseExceptionHandler();
 app.UseCors("AllowFrontend");
 app.MapEndpoints();

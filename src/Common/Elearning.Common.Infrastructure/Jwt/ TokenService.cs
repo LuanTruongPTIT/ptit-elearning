@@ -56,7 +56,7 @@ public class TokenService : ITokenService
     var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
     var token = new JwtSecurityToken(
-        expires: DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpirationMinutes),
+        expires: DateTime.UtcNow.AddDays(_jwtSettings.AccessTokenExpirationMinutes),
         claims: claims,
         signingCredentials: creds
     );
@@ -78,7 +78,7 @@ public class TokenService : ITokenService
     var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
     var token = new JwtSecurityToken(
-        expires: DateTime.UtcNow.AddMinutes(_jwtSettings.RefreshTokenExpirationDays),
+        expires: DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationDays),
         claims: claims,
         signingCredentials: creds
     );

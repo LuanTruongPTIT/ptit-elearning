@@ -12,6 +12,7 @@ using Elearning.Common.Infrastructure.Jwt;
 using Elearning.Common.Infrastructure.Outbox;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -42,6 +43,8 @@ public static class InfrastructureConfiguration
     services.TryAddSingleton<IEventBus, EventBus.EventBus>();
     services.TryAddSingleton<InsertOutboxMessagesInterceptor>();
     services.AddScoped<ITokenService, TokenService>();
+    services.AddAuthentication();
+    services.AddAuthorization();
     NpgsqlDataSource npgsqlDataSource = new NpgsqlDataSourceBuilder(databaseConnectionString).Build();
     services.TryAddSingleton(npgsqlDataSource);
 
@@ -70,8 +73,34 @@ public static class InfrastructureConfiguration
         ValidateAudience = false,
         ClockSkew = TimeSpan.Zero
       };
-    });
 
+      options.Events = new JwtBearerEvents
+      {
+        OnChallenge = async context =>
+            {
+              // Prevent default response
+              context.HandleResponse();
+
+              // Custom response
+              context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+              context.Response.ContentType = "application/json";
+              var result = System.Text.Json.JsonSerializer.Serialize(new
+              {
+                status = StatusCodes.Status401Unauthorized,
+                title = "Unauthorized",
+                detail = "You are not authorized to access this resource",
+                type = "https://tools.ietf.org/html/rfc7235#section-3.1"
+              });
+
+              await context.Response.WriteAsync(result);
+            }
+      };
+    });
+    services.AddAuthorization(options =>
+    {
+      options.AddPolicy("RequireRole_Teacher", policy => policy.RequireRole("Teacher"));
+      options.AddPolicy("RequireRole_Admin", policy => policy.RequireRole("Administrator"));
+    });
     services.AddQuartz(configurator =>
     {
       var scheduler = Guid.NewGuid();

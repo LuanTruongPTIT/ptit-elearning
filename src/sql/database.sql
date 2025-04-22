@@ -129,3 +129,19 @@ CREATE TABLE users.table_users
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+
+            CREATE TABLE programs.classes
+            (
+              id UUID PRIMARY KEY,
+              department_id UUID NOT NULL,
+              program_id UUID NOT NULL,
+              class_name VARCHAR(255) NOT NULL,
+              academic_period VARCHAR(100) NOT NULL,
+              status VARCHAR(50) NOT NULL,
+
+              created_at TIMESTAMP
+              WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP
+              WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);

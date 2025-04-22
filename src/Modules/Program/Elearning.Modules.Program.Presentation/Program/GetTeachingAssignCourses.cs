@@ -1,0 +1,41 @@
+using Elearning.Common.Domain;
+using Elearning.Common.Infrastructure.Auth;
+using Elearning.Common.Infrastructure.Extensions;
+using Elearning.Common.Presentation.Endpoints;
+using Elearning.Common.Presentation.Results;
+using Elearning.Modules.Program.Application.Program.GetTeachingAssignCourses;
+using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+
+namespace Elearning.Modules.Program.Presentation.Program;
+
+[RequireAuthAttribute("Teacher")]
+internal sealed class GetTeachingAssignCourses : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapGet("program/teaching-assign-courses", async (
+            ISender sender,
+            HttpContext context) =>
+        {
+            var teacherId = context.User.GetUserId();
+
+            Result<List<GetTeachingAssignCoursesResponse>> result = 
+                await sender.Send(new GetTeachingAssignCoursesQuery(teacherId));
+
+            return result.Match(
+                data => Results.Ok(new
+                {
+                    status = StatusCodes.Status200OK,
+                    message = "Get teaching assign courses successfully",
+                    data
+                }),
+                ApiResults.Problem
+            );
+        })
+        .RequireAuthorization("RequireRole_Teacher")
+        .WithTags("Program");
+    }
+}
