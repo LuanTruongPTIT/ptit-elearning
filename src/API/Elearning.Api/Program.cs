@@ -11,6 +11,7 @@ using System.Reflection;
 using Elearning.Api.Extensions;
 using Elearning.Modules.Users.Infrastructure;
 using Elearning.Modules.Program.Infrastructure;
+using Microsoft.AspNetCore.Http;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((context, loggerConfig) => loggerConfig.ReadFrom.Configuration(context.Configuration));

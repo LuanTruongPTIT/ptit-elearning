@@ -21,4 +21,10 @@ internal sealed class UsersRepository(UsersDbContext dbContext) : IUserRepositor
     return await dbContext.Users.Include(x => x.Roles)
                                 .SingleOrDefaultAsync(x => x.email == email, cancellationToken);
   }
+
+  public async Task<Domain.Users.User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+  {
+    return await dbContext.Users.Include(x => x.Roles)
+                                .SingleOrDefaultAsync(x => x.id == id, cancellationToken);
+  }
 }

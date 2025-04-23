@@ -8,4 +8,5 @@ public enum ErrorType
   Problem = 2,
   NotFound = 3,
   Conflict = 4,
+  Authorization = 5
 }
