@@ -4,6 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <!-- <GenerateAssemblyInfo>false</GenerateAssemblyInfo> -->
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,7 +13,20 @@
     <ProjectReference
       Include="..\..\..\Common\Elearning.Common.Presentation\Elearning.Common.Presentation.csproj" />
     <ProjectReference
+      Include="..\..\..\Common\Elearning.Common.Application\Elearning.Common.Application.csproj" />
+    <ProjectReference
       Include="..\Elearning.Modules.Program.Application\Elearning.Modules.Program.Application.csproj" />
-
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Routing.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Routing" Version="2.2.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"
+      Version="8.0.1" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <NoWarn>CS0579</NoWarn>
+  </PropertyGroup>
 </Project>

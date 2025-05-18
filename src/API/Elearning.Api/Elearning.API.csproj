@@ -23,7 +23,11 @@
     <ProjectReference
       Include="..\..\Modules\Users\Elearning.Modules.Users.Infrastructure\Elearning.Modules.Users.Infrastructure.csproj" />
     <ProjectReference
+      Include="..\..\Modules\Program\Elearning.Modules.Program.Application\Elearning.Modules.Program.Application.csproj" />
+    <ProjectReference
       Include="..\..\Modules\Program\Elearning.Modules.Program.Infrastructure\Elearning.Modules.Program.Infrastructure.csproj" />
+    <ProjectReference
+      Include="..\..\Modules\Program\Elearning.Modules.Program.Presentation\Elearning.Modules.Program.Presentation.csproj" />
   </ItemGroup>
 
 </Project>
