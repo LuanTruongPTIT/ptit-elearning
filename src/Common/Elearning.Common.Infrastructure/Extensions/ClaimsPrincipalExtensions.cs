@@ -6,6 +6,7 @@ public static class ClaimsPrincipalExtensions
 {
   public static string GetUserId(this ClaimsPrincipal principal)
   {
+    Console.WriteLine("tests", principal.FindFirstValue("sub"));
     return principal.FindFirstValue("sub") ??
            principal.FindFirstValue(ClaimTypes.NameIdentifier) ??
            string.Empty;

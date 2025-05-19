@@ -48,6 +48,7 @@ internal sealed class CreateLectureCommandHandler(IDbConnectionFactory dbConnect
               youtube_video_id,
               duration,
               is_published,
+              material_type,
               created_by
           ) VALUES (
               @id,
@@ -60,6 +61,7 @@ internal sealed class CreateLectureCommandHandler(IDbConnectionFactory dbConnect
               @youtube_video_id,
               @duration,
               @is_published,
+              @material_type,
               @created_by
           )
           RETURNING id;
@@ -81,6 +83,7 @@ internal sealed class CreateLectureCommandHandler(IDbConnectionFactory dbConnect
             request.youtube_video_id,
             request.duration,
             request.is_published,
+            request.materialType,
             request.created_by
           }
       );

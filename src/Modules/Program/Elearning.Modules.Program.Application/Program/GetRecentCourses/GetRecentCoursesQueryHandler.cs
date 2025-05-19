@@ -34,7 +34,7 @@ namespace Elearning.Modules.Program.Application.Program.GetRecentCourses
 
       // Get recent courses (last accessed)
       var recentCourses = enrolledCourses
-          .Where(c => c.Status != null) // Filter courses with status
+          .Where(c => c.status != null) // Filter courses with status
           .OrderByDescending(c => c.enrollment_date) // Order by enrollment date
           .Take(3)
           .Select(c => new EnrolledCourseDto
@@ -49,7 +49,7 @@ namespace Elearning.Modules.Program.Application.Program.GetRecentCourses
             CompletedLectures = 0, // Not available in the response
             LastAccessed = c.enrollment_date.ToString("o"),
             Category = "Course", // Default category
-            Status = c.Status
+            Status = c.status
           })
           .ToList();
 

@@ -12,5 +12,5 @@ public sealed class GetStudentCoursesResponse
   public string teacher_name { get; set; } = null!;
   public int progress_percentage { get; set; }
   public DateTime enrollment_date { get; set; }
-  public string Status { get; set; } = null!; // Added Status property
+  public string status { get; set; } = null!; // Course status: in_progress, completed, not_started
 }

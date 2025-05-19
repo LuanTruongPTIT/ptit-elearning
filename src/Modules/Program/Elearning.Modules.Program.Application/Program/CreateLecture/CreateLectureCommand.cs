@@ -10,7 +10,8 @@ public sealed record CreateLectureCommand(
     string content_url,
     string youtube_video_id,
     int? duration,
-    bool is_published
+    bool is_published,
+    string materialType
 ) : ICommand<Guid>
 {
   public Guid created_by { get; set; }

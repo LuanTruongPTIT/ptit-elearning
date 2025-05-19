@@ -17,18 +17,22 @@ internal sealed class GetStudentDashboard : IEndpoint
   public void MapEndpoint(IEndpointRouteBuilder app)
   {
     app.MapGet("student/dashboard", async (
-        [FromQuery] Guid? studentId,
+        [FromQuery] string? studentId,
         ISender sender,
         HttpContext httpContext) =>
     {
       // If studentId is not provided, try to get it from the current user
+      Guid? studentGuid = null;
       if (studentId == null)
       {
-        var userId = Guid.Parse(httpContext.User.GetUserId());
-        studentId = userId;
+        studentGuid = Guid.Parse(httpContext.User.GetUserId());
+      }
+      else if (Guid.TryParse(studentId, out Guid parsedId))
+      {
+        studentGuid = parsedId;
       }
 
-      var query = new GetStudentDashboardQuery { StudentId = studentId };
+      var query = new GetStudentDashboardQuery { StudentId = studentGuid };
       var result = await sender.Send(query);
 
       return Results.Ok(new
@@ -38,7 +42,7 @@ internal sealed class GetStudentDashboard : IEndpoint
         data = result
       });
     })
-    .RequireAuthorization("RequireRole_Student")
+   .RequireAuthorization()
     .WithTags("Student");
   }
 }

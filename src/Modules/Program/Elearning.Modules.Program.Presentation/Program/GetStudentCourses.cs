@@ -14,7 +14,7 @@ internal sealed class GetStudentCourses : IEndpoint
 {
   public void MapEndpoint(IEndpointRouteBuilder app)
   {
-    app.MapGet("api/student/courses", async (
+    app.MapGet("student/courses", async (
         [FromQuery] Guid studentId,
         ISender sender) =>
     {

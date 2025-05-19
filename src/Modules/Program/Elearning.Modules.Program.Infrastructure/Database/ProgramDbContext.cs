@@ -16,6 +16,8 @@ public sealed class ProgramDbContext : DbContext, IProgramUnitOfWork
   internal DbSet<ProgramUnit> ProgramUnits { get; set; }
   internal DbSet<Department> Departments { get; set; }
   internal DbSet<Lecture> Lectures { get; set; }
+  internal DbSet<StudentCourseProgress> StudentCourseProgresses { get; set; }
+  internal DbSet<StudentLectureProgress> StudentLectureProgresses { get; set; }
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
@@ -26,6 +28,8 @@ public sealed class ProgramDbContext : DbContext, IProgramUnitOfWork
     modelBuilder.ApplyConfiguration(new ProgramUnitConfiguration());
     modelBuilder.ApplyConfiguration(new DepartmentConfiguration());
     modelBuilder.ApplyConfiguration(new LectureConfiguration());
+    modelBuilder.ApplyConfiguration(new StudentCourseProgressConfiguration());
+    modelBuilder.ApplyConfiguration(new StudentLectureProgressConfiguration());
 
     // Nếu có dùng Inbox/Outbox cho module này thì thêm như sau:
     // modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());

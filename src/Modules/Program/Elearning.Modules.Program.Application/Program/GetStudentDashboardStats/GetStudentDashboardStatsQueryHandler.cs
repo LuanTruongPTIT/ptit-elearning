@@ -40,22 +40,25 @@ namespace Elearning.Modules.Program.Application.Program.GetStudentDashboardStats
       // Get the actual courses from the Result
       var enrolledCourses = coursesResult.Value;
 
-      // Map status based on progress
+      // Map status based on progress (if not already set by the database)
       foreach (var course in enrolledCourses)
       {
-        if (course.progress_percentage == 100)
-          course.Status = "completed";
-        else if (course.progress_percentage > 0)
-          course.Status = "in_progress";
-        else
-          course.Status = "not_started";
+        if (string.IsNullOrEmpty(course.status))
+        {
+          if (course.progress_percentage == 100)
+            course.status = "completed";
+          else if (course.progress_percentage > 0)
+            course.status = "in_progress";
+          else
+            course.status = "not_started";
+        }
       }
 
       // Calculate statistics
       int totalCourses = enrolledCourses.Count;
-      int completedCourses = enrolledCourses.Count(c => c.Status == "completed");
-      int inProgressCourses = enrolledCourses.Count(c => c.Status == "in_progress");
-      int notStartedCourses = enrolledCourses.Count(c => c.Status == "not_started");
+      int completedCourses = enrolledCourses.Count(c => c.status == "completed");
+      int inProgressCourses = enrolledCourses.Count(c => c.status == "in_progress");
+      int notStartedCourses = enrolledCourses.Count(c => c.status == "not_started");
 
       // Calculate overall progress
       int overallProgress = totalCourses > 0

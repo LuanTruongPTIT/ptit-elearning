@@ -38,7 +38,7 @@ internal sealed class GetRecentCourses : IEndpoint
         data = result
       });
     })
-    .RequireAuthorization("RequireRole_Student")
+    .AllowAnonymous() // Tạm thời cho phép truy cập không cần xác thực
     .WithTags("Student");
   }
 }

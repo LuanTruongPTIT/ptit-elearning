@@ -100,6 +100,7 @@ public static class InfrastructureConfiguration
     {
       options.AddPolicy("RequireRole_Teacher", policy => policy.RequireRole("Teacher"));
       options.AddPolicy("RequireRole_Admin", policy => policy.RequireRole("Administrator"));
+      options.AddPolicy("RequireRole_Student", policy => policy.RequireRole("Student"));
     });
     services.AddQuartz(configurator =>
     {

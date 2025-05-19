@@ -24,10 +24,11 @@ public static class ProgramsModule
 
     // Skip loading the Presentation assembly for now
     // This is a temporary workaround to avoid the duplicate attribute error
-    Console.WriteLine("Skipping loading Presentation assembly to avoid duplicate attribute error.");
+    // Console.WriteLine("Skipping loading Presentation assembly to avoid duplicate attribute error.");
 
     // We'll manually register the endpoints here
-    services.AddEndpoints(typeof(ProgramsModule).Assembly);
+
+    services.AddEndpoints(Elearning.Modules.Program.Presentation.AssemblyReference.Assembly);
 
     return services;
   }

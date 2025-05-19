@@ -20,6 +20,8 @@
       Include="..\Elearning.Modules.Program.Domain\Elearning.Modules.Program.Domain.csproj" />
     <ProjectReference
       Include="..\..\..\Common\Elearning.Common.Presentation\Elearning.Common.Presentation.csproj" />
+    <ProjectReference
+      Include="..\Elearning.Modules.Program.Presentation\Elearning.Modules.Program.Presentation.csproj" />
   </ItemGroup>
   <ItemGroup>
     <!-- <PackageReference Include="AspNetCore.HealthChecks.Rabbitmq" Version="8.0.0" /> -->
