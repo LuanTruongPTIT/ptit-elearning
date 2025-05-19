@@ -130,7 +130,10 @@ internal sealed class GetStudentCoursesQueryHandler(
                 sc.description,
                 u.full_name AS teacher_name,
                 COALESCE(scp.progress_percentage, 0) AS progress_percentage,
+                COALESCE(scp.total_lectures, 0) AS total_lectures,
+                COALESCE(scp.completed_lectures, 0) AS completed_lectures,
                 sc.enrollment_date,
+                scp.last_accessed,
                 COALESCE(scp.status, 'not_started') AS status
             FROM
                 student_courses sc
