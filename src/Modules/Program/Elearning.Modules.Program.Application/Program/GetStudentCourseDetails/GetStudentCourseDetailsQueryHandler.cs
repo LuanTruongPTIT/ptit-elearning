@@ -1,4 +1,5 @@
 using System.Data.Common;
+using System.Text.Json;
 using Dapper;
 using Elearning.Common.Application.Data;
 using Elearning.Common.Application.Messaging;
@@ -8,25 +9,25 @@ namespace Elearning.Modules.Program.Application.Program.GetStudentCourseDetails;
 
 public sealed class GetStudentCourseDetailsQueryHandler : IQueryHandler<GetStudentCourseDetailsQuery, StudentCourseDetailsResponse>
 {
-  private readonly IDbConnectionFactory _dbConnectionFactory;
+    private readonly IDbConnectionFactory _dbConnectionFactory;
 
-  public GetStudentCourseDetailsQueryHandler(IDbConnectionFactory dbConnectionFactory)
-  {
-    _dbConnectionFactory = dbConnectionFactory;
-  }
-
-  public async Task<Result<StudentCourseDetailsResponse>> Handle(GetStudentCourseDetailsQuery request, CancellationToken cancellationToken)
-  {
-    try
+    public GetStudentCourseDetailsQueryHandler(IDbConnectionFactory dbConnectionFactory)
     {
-      Console.WriteLine($"GetStudentCourseDetailsQueryHandler: Handling query for courseId {request.CourseId} and studentId {request.StudentId}");
+        _dbConnectionFactory = dbConnectionFactory;
+    }
 
-      Console.WriteLine($"GetStudentCourseDetailsQueryHandler: Creating database connection");
-      await using DbConnection connection = await _dbConnectionFactory.OpenConnectionAsync();
-      Console.WriteLine($"GetStudentCourseDetailsQueryHandler: Connection state: {connection.State}");
+    public async Task<Result<StudentCourseDetailsResponse>> Handle(GetStudentCourseDetailsQuery request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            Console.WriteLine($"GetStudentCourseDetailsQueryHandler: Handling query for courseId {request.CourseId} and studentId {request.StudentId}");
 
-      // 1. Lấy thông tin cơ bản về khóa học và tiến độ học tập
-      var courseDetailsSql = @"
+            Console.WriteLine($"GetStudentCourseDetailsQueryHandler: Creating database connection");
+            await using DbConnection connection = await _dbConnectionFactory.OpenConnectionAsync();
+            Console.WriteLine($"GetStudentCourseDetailsQueryHandler: Connection state: {connection.State}");
+
+            // 1. Lấy thông tin cơ bản về khóa học và tiến độ học tập
+            var courseDetailsSql = @"
         WITH course_progress AS (
           SELECT
             slp.lecture_id,
@@ -87,22 +88,23 @@ public sealed class GetStudentCourseDetailsQueryHandler : IQueryHandler<GetStude
           tac.id = @CourseId
       ";
 
-      var parameters = new { CourseId = request.CourseId, StudentId = request.StudentId };
+            var parameters = new { CourseId = request.CourseId, StudentId = request.StudentId };
+            Console.WriteLine($"GetStudentCourseDetailsQueryHandler: Parameters: {JsonSerializer.Serialize(parameters)}");
 
-      Console.WriteLine($"GetStudentCourseDetailsQueryHandler: Executing course details SQL query");
-      var courseDetails = await connection.QueryFirstOrDefaultAsync<dynamic>(courseDetailsSql, parameters);
+            Console.WriteLine($"GetStudentCourseDetailsQueryHandler: Executing course details SQL query");
+            var courseDetails = await connection.QueryFirstOrDefaultAsync<dynamic>(courseDetailsSql, parameters);
 
-      if (courseDetails == null)
-      {
-        Console.WriteLine($"GetStudentCourseDetailsQueryHandler: Course not found");
-        return Result.Failure<StudentCourseDetailsResponse>(
-            new Error("GetStudentCourseDetails.NotFound", "Course not found", ErrorType.NotFound));
-      }
+            if (courseDetails == null)
+            {
+                Console.WriteLine($"GetStudentCourseDetailsQueryHandler: Course not found");
+                return Result.Failure<StudentCourseDetailsResponse>(
+                    new Error("GetStudentCourseDetails.NotFound", "Course not found", ErrorType.NotFound));
+            }
 
-      Console.WriteLine($"GetStudentCourseDetailsQueryHandler: Course details retrieved successfully");
+            Console.WriteLine($"GetStudentCourseDetailsQueryHandler: Course details retrieved successfully");
 
-      // 2. Lấy thông tin về giảng viên
-      var instructorSql = @"
+            // 2. Lấy thông tin về giảng viên
+            var instructorSql = @"
         SELECT
           u.full_name AS teacher_name,
           u.avatar_url AS avatar
@@ -114,17 +116,17 @@ public sealed class GetStudentCourseDetailsQueryHandler : IQueryHandler<GetStude
           tac.id = @CourseId
       ";
 
-      var instructor = await connection.QueryFirstOrDefaultAsync<InstructorDto>(instructorSql, new { CourseId = request.CourseId });
+            var instructor = await connection.QueryFirstOrDefaultAsync<InstructorDto>(instructorSql, new { CourseId = request.CourseId });
 
-      // 3. Lấy danh sách các bài giảng
-      var lecturesSql = @"
+            // 3. Lấy danh sách các bài giảng
+            var lecturesSql = @"
         SELECT
-          l.id,
-          l.title,
-          l.description,
-          l.content_type,
-          l.content_url,
-          COALESCE(slp.is_completed, false) AS is_completed
+          l.id AS Id,
+          l.title AS Title,
+          l.description AS Description,
+          l.content_type AS ContentType,
+          l.content_url AS ContentUrl,
+          COALESCE(slp.is_completed, false) AS IsCompleted
         FROM
           programs.table_lectures l
         LEFT JOIN
@@ -133,15 +135,15 @@ public sealed class GetStudentCourseDetailsQueryHandler : IQueryHandler<GetStude
           l.teaching_assign_course_id = @CourseId
       ";
 
-      var lectures = await connection.QueryAsync<LectureDto>(lecturesSql, parameters);
-
-      // 4. Lấy danh sách các tài liệu (lectures với content_type là Assignment, Resource, Exam)
-      var resourcesSql = @"
+            var lectures = await connection.QueryAsync<LectureDto>(lecturesSql, parameters);
+            Console.WriteLine("Lectures: ", lectures);
+            // 4. Lấy danh sách các tài liệu (lectures với content_type là Assignment, Resource, Exam)
+            var resourcesSql = @"
         SELECT
-          l.id,
-          l.title,
-          l.content_type,
-          l.content_url
+          l.id AS Id,
+          l.title AS Title,
+          l.content_type AS ContentType,
+          l.content_url AS ContentUrl
         FROM
           programs.table_lectures l
         WHERE
@@ -151,10 +153,10 @@ public sealed class GetStudentCourseDetailsQueryHandler : IQueryHandler<GetStude
           l.created_at DESC
       ";
 
-      var resources = await connection.QueryAsync<ResourceDto>(resourcesSql, parameters);
+            var resources = await connection.QueryAsync<ResourceDto>(resourcesSql, parameters);
 
-      // 5. Tạo mock data cho announcements (vì hiện tại chưa có tính năng này)
-      var announcements = new List<AnnouncementDto>
+            // 5. Tạo mock data cho announcements (vì hiện tại chưa có tính năng này)
+            var announcements = new List<AnnouncementDto>
       {
         new AnnouncementDto
         {
@@ -172,42 +174,42 @@ public sealed class GetStudentCourseDetailsQueryHandler : IQueryHandler<GetStude
         }
       };
 
-      // 6. Tạo response
-      var response = new StudentCourseDetailsResponse
-      {
-        CourseId = courseDetails.course_id,
-        CourseName = courseDetails.course_name,
-        Description = courseDetails.description,
-        ThumbnailUrl = courseDetails.thumbnail_url,
-        ProgressPercent = Convert.ToDouble(courseDetails.progress_percent),
-        TotalLectures = Convert.ToInt32(courseDetails.total_lectures),
-        CompletedLectures = Convert.ToInt32(courseDetails.completed_lectures),
-        LastAccessed = courseDetails.last_accessed,
-        CreatedAt = courseDetails.created_at,
-        UpdatedAt = courseDetails.updated_at,
-        Status = courseDetails.status,
-        Instructor = instructor ?? new InstructorDto
+            // 6. Tạo response
+            var response = new StudentCourseDetailsResponse
+            {
+                CourseId = courseDetails.course_id,
+                CourseName = courseDetails.course_name,
+                Description = courseDetails.description,
+                ThumbnailUrl = courseDetails.thumbnail_url,
+                ProgressPercent = Convert.ToDouble(courseDetails.progress_percent),
+                TotalLectures = Convert.ToInt32(courseDetails.total_lectures),
+                CompletedLectures = Convert.ToInt32(courseDetails.completed_lectures),
+                LastAccessed = courseDetails.last_accessed,
+                CreatedAt = courseDetails.created_at,
+                UpdatedAt = courseDetails.updated_at,
+                Status = courseDetails.status,
+                Instructor = instructor ?? new InstructorDto
+                {
+                    TeacherName = "Unknown Instructor",
+                    Avatar = "https://randomuser.me/api/portraits/men/32.jpg"
+                },
+                Lectures = lectures.ToList(),
+                Announcements = announcements,
+                Resources = resources.ToList()
+            };
+
+            Console.WriteLine($"GetStudentCourseDetailsQueryHandler: Found {response.Lectures.Count} lectures");
+            return Result.Success(response);
+        }
+        catch (Exception ex)
         {
-          TeacherName = "Unknown Instructor",
-          Avatar = "https://randomuser.me/api/portraits/men/32.jpg"
-        },
-        Lectures = lectures.ToList(),
-        Announcements = announcements,
-        Resources = resources.ToList()
-      };
+            // Log the exception
+            Console.WriteLine($"Error in GetStudentCourseDetailsQueryHandler: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
 
-      Console.WriteLine($"GetStudentCourseDetailsQueryHandler: Found {response.Lectures.Count} lectures");
-      return Result.Success(response);
+            // Return failure result
+            return Result.Failure<StudentCourseDetailsResponse>(
+                new Error("GetStudentCourseDetails.Error", $"An error occurred while retrieving course details: {ex.Message}", ErrorType.Failure));
+        }
     }
-    catch (Exception ex)
-    {
-      // Log the exception
-      Console.WriteLine($"Error in GetStudentCourseDetailsQueryHandler: {ex.Message}");
-      Console.WriteLine($"Stack trace: {ex.StackTrace}");
-
-      // Return failure result
-      return Result.Failure<StudentCourseDetailsResponse>(
-          new Error("GetStudentCourseDetails.Error", $"An error occurred while retrieving course details: {ex.Message}", ErrorType.Failure));
-    }
-  }
 }
