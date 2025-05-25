@@ -1,0 +1,17 @@
+<Project>
+  <PropertyGroup>
+    <!-- Tắt tự động tạo assembly attributes để tránh duplicate -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+    
+    <!-- Cấu hình chung cho tất cả projects -->
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    
+    <!-- Thông tin assembly chung -->
+    <Company>Elearning System</Company>
+    <Product>Elearning Platform</Product>
+    <Copyright>Copyright © 2024</Copyright>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+</Project>
