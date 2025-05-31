@@ -11,5 +11,7 @@
     <ProjectReference
       Include="..\..\..\Common\Elearning.Common.Application\Elearning.Common.Application.csproj" />
 
+    <ProjectReference
+      Include="..\Elearning.Modules.Program.Domain\Elearning.Modules.Program.Domain.csproj" />
   </ItemGroup>
 </Project>

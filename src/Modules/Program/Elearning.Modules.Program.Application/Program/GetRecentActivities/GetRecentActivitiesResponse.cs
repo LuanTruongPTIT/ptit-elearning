@@ -1,17 +1,21 @@
-namespace Elearning.Modules.Program.Application.Program.GetRecentActivities
-{
-    public class GetRecentActivitiesResponse
-    {
-        public List<ActivityDto> Activities { get; set; }
-    }
+namespace Elearning.Modules.Program.Application.Program.GetRecentActivities;
 
-    public class ActivityDto
-    {
-        public string Id { get; set; }
-        public string Type { get; set; }
-        public string Course { get; set; }
-        public string Title { get; set; }
-        public string Timestamp { get; set; }
-        public int? Score { get; set; }
-    }
-}
+public sealed record GetRecentActivitiesResponse(
+    List<RecentActivityDto> activities,
+    int total_count,
+    bool has_more
+);
+
+public sealed record RecentActivityDto(
+    Guid id,
+    Guid user_id,
+    string action,
+    string target_type,
+    Guid target_id,
+    string? target_title,
+    Guid? course_id,
+    string? course_name,
+    object? metadata,
+    DateTime created_at,
+    string time_ago
+);
