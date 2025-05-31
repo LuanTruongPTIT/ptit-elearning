@@ -1,4 +1,3 @@
-
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
@@ -36,6 +35,10 @@ public static class ProgramsModule
   private static void AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
   {
     // services.AddScoped<IUserRepository, UsersRepository>();
+
+    // Add HttpClient for file download functionality
+    services.AddHttpClient();
+
     services.AddDbContext<ProgramDbContext>((sp, options) =>
       options
              .UseNpgsql(

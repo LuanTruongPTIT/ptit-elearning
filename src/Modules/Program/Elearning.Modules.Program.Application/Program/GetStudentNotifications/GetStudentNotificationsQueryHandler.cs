@@ -34,35 +34,43 @@ public class GetStudentNotificationsQueryHandler : IRequestHandler<GetStudentNot
         });
 
         // Get notifications with pagination
-        const string notificationsSql = @"
+        const string sql = @"
                 SELECT 
                     n.id,
+                    n.type,
                     n.title,
                     n.message,
-                    n.type,
-                    n.target_type,
                     n.target_id,
+                    n.target_type,
                     n.is_read,
-                    n.created_at
+                    n.created_at,
+                    CASE WHEN n.created_at > @recentThreshold THEN true ELSE false END as is_new,
+                    a.deadline,
+                    a.assignment_type,
+                    tac.course_class_name as course_name
                 FROM programs.table_notifications n
-                WHERE n.user_id = @studentId
-                    AND (@notificationType IS NULL OR n.type = @notificationType)
+                LEFT JOIN programs.table_assignments a ON n.target_id = a.id AND n.target_type = 'assignment'
+                LEFT JOIN programs.table_teaching_assign_courses tac ON a.teaching_assign_course_id = tac.id
+                WHERE n.user_id = @StudentId
+                    AND (@NotificationType IS NULL OR n.type = @NotificationType)
                 ORDER BY n.created_at DESC
-                LIMIT @pageSize OFFSET @offset";
+                LIMIT @PageSize OFFSET @Offset";
 
         var offset = (request.PageNumber - 1) * request.PageSize;
-        var notifications = await connection.QueryAsync<dynamic>(notificationsSql, new
+        var notifications = await connection.QueryAsync<dynamic>(sql, new
         {
-            studentId = request.StudentId,
-            notificationType = request.NotificationType,
-            pageSize = request.PageSize,
-            offset = offset
+            StudentId = request.StudentId,
+            NotificationType = request.NotificationType,
+            PageSize = request.PageSize,
+            Offset = offset,
+            recentThreshold = DateTime.UtcNow.AddHours(-24)
         });
+        Console.WriteLine("notifications", notifications.ToString());
 
         var notificationDtos = notifications.Select(n =>
         {
             var createdAt = (DateTime)n.created_at;
-
+            Console.WriteLine("assignment", n.target_id?.ToString());
             return new StudentNotificationDto
             {
                 Id = n.id.ToString(),
@@ -71,11 +79,12 @@ public class GetStudentNotificationsQueryHandler : IRequestHandler<GetStudentNot
                 Message = n.message?.ToString() ?? "",
                 AssignmentId = n.target_type?.ToString() == "assignment" ? n.target_id?.ToString() : null,
                 CourseId = null, // Will be populated later if needed
-                Deadline = null, // Not stored in this table
-                AssignmentType = n.target_type?.ToString(),
+                CourseName = n.course_name?.ToString(),
+                Deadline = n.deadline != null ? (DateTime?)n.deadline : null,
+                AssignmentType = n.assignment_type?.ToString(),
                 CreatedAt = createdAt,
                 IsRead = (bool)(n.is_read ?? false),
-                IsNew = createdAt > DateTime.UtcNow.AddHours(-24)
+                IsNew = (bool)(n.is_new ?? false)
             };
         }).ToList();
 
