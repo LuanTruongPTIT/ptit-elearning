@@ -9,32 +9,32 @@ namespace Elearning.Modules.Users.Application.Students.GetStudents;
 internal sealed class GetStudentsQueryHandler(
     IDbConnectionFactory dbConnectionFactory) : IQueryHandler<GetStudentsQuery, GetStudentsWithPaginationResponse>
 {
-    public async Task<Result<GetStudentsWithPaginationResponse>> Handle(GetStudentsQuery request, CancellationToken cancellationToken)
+  public async Task<Result<GetStudentsWithPaginationResponse>> Handle(GetStudentsQuery request, CancellationToken cancellationToken)
+  {
+    try
     {
-        try
-        {
-            await using DbConnection connection = await dbConnectionFactory.OpenConnectionAsync();
+      await using DbConnection connection = await dbConnectionFactory.OpenConnectionAsync();
 
-            // Validate user role and ID
-            var userRole = request.UserRole;
-            var userId = request.UserId;
+      // Validate user role and ID
+      var userRole = request.UserRole;
+      var userId = request.UserId;
 
-            if (string.IsNullOrEmpty(userRole) || string.IsNullOrEmpty(userId?.ToString()))
-            {
-                Console.WriteLine("Invalid user role or ID");
-                return Result.Failure<GetStudentsWithPaginationResponse>(
-                    new Error("GetStudents.Unauthorized", "You don't have permission to view students", ErrorType.Authorization));
-            }
+      if (string.IsNullOrEmpty(userRole) || string.IsNullOrEmpty(userId?.ToString()))
+      {
+        Console.WriteLine("Invalid user role or ID");
+        return Result.Failure<GetStudentsWithPaginationResponse>(
+            new Error("GetStudents.Unauthorized", "You don't have permission to view students", ErrorType.Authorization));
+      }
 
-            Console.WriteLine($"GetStudents: UserRole={userRole}, UserId={userId}");
+      Console.WriteLine($"GetStudents: UserRole={userRole}, UserId={userId}");
 
-            // Default values for pagination
-            int page = request.Page ?? 1;
-            int pageSize = Math.Min(request.PageSize ?? 10, 100); // Limit max page size to 100
-            int offset = (page - 1) * pageSize;
+      // Default values for pagination
+      int page = request.Page ?? 1;
+      int pageSize = Math.Min(request.PageSize ?? 10, 100); // Limit max page size to 100
+      int offset = (page - 1) * pageSize;
 
-            // Build base SQL query
-            string baseQuery = @"
+      // Build base SQL query
+      string baseQuery = @"
                     SELECT 
                         u.id,
                         u.username,
@@ -60,7 +60,7 @@ internal sealed class GetStudentsQueryHandler(
                     WHERE 
                         ur.role_name = 'Student'";
 
-            string countQuery = @"
+      string countQuery = @"
                     SELECT COUNT(*)
                     FROM 
                         users.table_users u
@@ -73,41 +73,41 @@ internal sealed class GetStudentsQueryHandler(
                     WHERE 
                         ur.role_name = 'Student'";
 
-            // Add search filter if provided
-            if (!string.IsNullOrEmpty(request.Keyword))
-            {
-                string searchFilter = @"
+      // Add search filter if provided
+      if (!string.IsNullOrEmpty(request.Keyword))
+      {
+        string searchFilter = @"
                         AND (u.full_name ILIKE '%' || @Keyword || '%' OR 
                             u.email ILIKE '%' || @Keyword || '%' OR
                             u.username ILIKE '%' || @Keyword || '%' OR
                             u.phone_number ILIKE '%' || @Keyword || '%' OR
                             p.name ILIKE '%' || @Keyword || '%')";
 
-                baseQuery += searchFilter;
-                countQuery += searchFilter;
-            }
+        baseQuery += searchFilter;
+        countQuery += searchFilter;
+      }
 
-            // Add program filter if provided
-            if (request.ProgramId.HasValue)
-            {
-                string programFilter = " AND sp.program_id = @ProgramId";
-                baseQuery += programFilter;
-                countQuery += programFilter;
-            }
+      // Add program filter if provided
+      if (request.ProgramId.HasValue)
+      {
+        string programFilter = " AND sp.program_id = @ProgramId";
+        baseQuery += programFilter;
+        countQuery += programFilter;
+      }
 
-            // Add status filter if provided
-            if (request.AccountStatus.HasValue)
-            {
-                string statusFilter = " AND u.account_status = @AccountStatus";
-                baseQuery += statusFilter;
-                countQuery += statusFilter;
-            }
+      // Add status filter if provided
+      if (request.AccountStatus.HasValue)
+      {
+        string statusFilter = " AND u.account_status = @AccountStatus";
+        baseQuery += statusFilter;
+        countQuery += statusFilter;
+      }
 
-            // Role-based access control
-            if (userRole == "Teacher" || userRole == "Lecturer")
-            {
-                // Teachers can only see students in their classes
-                string teacherFilter = @"
+      // Role-based access control
+      if (userRole == "Teacher" || userRole == "Lecturer")
+      {
+        // Teachers can only see students in their classes
+        string teacherFilter = @"
                         AND EXISTS (
                             SELECT 1 FROM programs.table_teaching_assign_courses tac
                             INNER JOIN programs.classes c ON c.id = tac.class_id
@@ -115,18 +115,18 @@ internal sealed class GetStudentsQueryHandler(
                             WHERE tac.teacher_id = @UserId AND sp2.student_id = u.id
                         )";
 
-                baseQuery += teacherFilter;
-                countQuery += teacherFilter;
-            }
-            else if (userRole != "Administrator")
-            {
-                // Only Admin and Teachers can access this endpoint
-                return Result.Failure<GetStudentsWithPaginationResponse>(
-                    new Error("GetStudents.Unauthorized", "You don't have permission to view students", ErrorType.Authorization));
-            }
+        baseQuery += teacherFilter;
+        countQuery += teacherFilter;
+      }
+      else if (userRole != "Administrator")
+      {
+        // Only Admin and Teachers can access this endpoint
+        return Result.Failure<GetStudentsWithPaginationResponse>(
+            new Error("GetStudents.Unauthorized", "You don't have permission to view students", ErrorType.Authorization));
+      }
 
-            // Add sorting and pagination
-            baseQuery += @"
+      // Add sorting and pagination
+      baseQuery += @"
                     ORDER BY 
                         CASE WHEN @SortBy = 'full_name' AND @SortOrder = 'asc' THEN u.full_name END ASC,
                         CASE WHEN @SortBy = 'full_name' AND @SortOrder = 'desc' THEN u.full_name END DESC,
@@ -139,49 +139,43 @@ internal sealed class GetStudentsQueryHandler(
                         u.created_at DESC
                     LIMIT @PageSize OFFSET @Offset";
 
-            var parameters = new
-            {
-                Keyword = request.Keyword,
-                ProgramId = request.ProgramId,
-                AccountStatus = request.AccountStatus,
-                UserId = userId,
-                SortBy = request.SortBy ?? "created_at",
-                SortOrder = request.SortOrder ?? "desc",
-                PageSize = pageSize,
-                Offset = offset
-            };
+      var parameters = new
+      {
+        Keyword = request.Keyword,
+        ProgramId = request.ProgramId,
+        AccountStatus = request.AccountStatus,
+        UserId = userId,
+        SortBy = request.SortBy ?? "created_at",
+        SortOrder = request.SortOrder ?? "desc",
+        PageSize = pageSize,
+        Offset = offset
+      };
 
-            // Execute queries in parallel
-            var studentsTask = connection.QueryAsync<GetStudentsResponse>(baseQuery, parameters);
-            var totalCountTask = connection.QuerySingleAsync<int>(countQuery, parameters);
+      // Execute queries sequentially (PostgreSQL doesn't support multiple concurrent commands on same connection)
+      var totalCount = await connection.QuerySingleAsync<int>(countQuery, parameters);
+      var students = await connection.QueryAsync<GetStudentsResponse>(baseQuery, parameters);
 
-            await Task.WhenAll(studentsTask, totalCountTask);
+      var response = new GetStudentsWithPaginationResponse
+      {
+        Students = students.ToList(),
+        TotalCount = totalCount,
+        Page = page,
+        PageSize = pageSize,
+        TotalPages = (int)Math.Ceiling((double)totalCount / pageSize),
+        HasNextPage = page * pageSize < totalCount,
+        HasPreviousPage = page > 1
+      };
 
-            var students = await studentsTask;
-            var totalCount = await totalCountTask;
+      Console.WriteLine($"GetStudents: Found {students.Count()} students, Total: {totalCount}");
 
-            var response = new GetStudentsWithPaginationResponse
-            {
-                Students = students.ToList(),
-                TotalCount = totalCount,
-                Page = page,
-                PageSize = pageSize,
-                TotalPages = (int)Math.Ceiling((double)totalCount / pageSize),
-                HasNextPage = page * pageSize < totalCount,
-                HasPreviousPage = page > 1
-            };
-
-            Console.WriteLine($"GetStudents: Found {students.Count()} students, Total: {totalCount}");
-
-            return Result.Success(response);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Exception in GetStudentsQueryHandler: {ex.Message}");
-            Console.WriteLine($"Stack trace: {ex.StackTrace}");
-
-            return Result.Failure<GetStudentsWithPaginationResponse>(
-                new Error("GetStudents.DatabaseError", $"Database error: {ex.Message}", ErrorType.Failure));
-        }
+      return Result.Success(response);
     }
+    catch (Exception ex)
+    {
+      Console.WriteLine($"Exception in GetStudentsQueryHandler: {ex}");
+
+      return Result.Failure<GetStudentsWithPaginationResponse>(
+          new Error("GetStudents.DatabaseError", $"Database error: {ex.Message}", ErrorType.Failure));
+    }
+  }
 }
