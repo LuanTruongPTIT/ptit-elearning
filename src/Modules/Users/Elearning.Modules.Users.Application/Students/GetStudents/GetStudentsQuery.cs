@@ -7,5 +7,9 @@ public sealed record GetStudentsQuery(
     int? Page = null,
     int? PageSize = null,
     Guid? UserId = null,
-    string? UserRole = null
-) : IQuery<List<GetStudentsResponse>>;
+    string? UserRole = null,
+    Guid? ProgramId = null,
+    int? AccountStatus = null,
+    string? SortBy = null,
+    string? SortOrder = null
+) : IQuery<GetStudentsWithPaginationResponse>;
