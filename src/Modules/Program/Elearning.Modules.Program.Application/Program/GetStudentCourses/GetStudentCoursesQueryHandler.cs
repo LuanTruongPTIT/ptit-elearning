@@ -59,28 +59,30 @@ internal sealed class GetStudentCoursesQueryHandler(
                 WHERE
                     tac.status = 'active'
             ),
-            -- Calculate lecture progress from student_lecture_progresses (if table exists)
+            -- Calculate lecture progress from student_lecture_progresses
             course_progress AS (
                 SELECT
                     l.id AS lecture_id,
-                    FALSE AS is_completed, -- Mặc định là chưa hoàn thành
+                    COALESCE(slp.is_completed, FALSE) AS is_completed,
                     l.teaching_assign_course_id
                 FROM
                     programs.table_lectures l
+                LEFT JOIN
+                    programs.table_student_lecture_progress slp ON l.id = slp.lecture_id 
+                    AND slp.student_id = @student_id
                 WHERE
                     l.teaching_assign_course_id IN (SELECT teaching_assign_course_id FROM student_courses)
+                    AND l.is_published = true
             ),
             lecture_counts AS (
                 SELECT
-                    l.teaching_assign_course_id,
-                    COUNT(l.id) AS total_lectures,
-                    0 AS completed_lectures -- Mặc định là 0 bài giảng đã hoàn thành
+                    cp.teaching_assign_course_id,
+                    COUNT(cp.lecture_id) AS total_lectures,
+                    COUNT(CASE WHEN cp.is_completed = true THEN 1 END) AS completed_lectures
                 FROM
-                    programs.table_lectures l
-                WHERE
-                    l.teaching_assign_course_id IN (SELECT teaching_assign_course_id FROM student_courses)
+                    course_progress cp
                 GROUP BY
-                    l.teaching_assign_course_id
+                    cp.teaching_assign_course_id
             ),
             -- Calculate progress and update student_course_progress table
             progress_data AS (

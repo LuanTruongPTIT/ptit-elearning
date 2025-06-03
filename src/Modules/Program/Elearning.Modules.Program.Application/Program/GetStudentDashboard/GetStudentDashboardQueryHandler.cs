@@ -11,50 +11,50 @@ using System.Threading.Tasks;
 
 namespace Elearning.Modules.Program.Application.Program.GetStudentDashboard
 {
-    public class GetStudentDashboardQueryHandler : IRequestHandler<GetStudentDashboardQuery, GetStudentDashboardResponse>
+  public class GetStudentDashboardQueryHandler : IRequestHandler<GetStudentDashboardQuery, GetStudentDashboardResponse>
+  {
+    private readonly IMediator _mediator;
+
+    public GetStudentDashboardQueryHandler(IMediator mediator)
     {
-        private readonly IMediator _mediator;
-
-        public GetStudentDashboardQueryHandler(IMediator mediator)
-        {
-            _mediator = mediator;
-        }
-
-        public async Task<GetStudentDashboardResponse> Handle(GetStudentDashboardQuery request, CancellationToken cancellationToken)
-        {
-            // Get all dashboard data in parallel
-            var studentId = request.StudentId;
-
-            var statsTask = _mediator.Send(new GetStudentDashboardStatsQuery { StudentId = studentId }, cancellationToken);
-            var recentCoursesTask = _mediator.Send(new GetRecentCoursesQuery { StudentId = studentId }, cancellationToken);
-            var upcomingDeadlinesTask = _mediator.Send(new GetUpcomingDeadlinesQuery(), cancellationToken);
-            var recentActivitiesTask = _mediator.Send(new GetRecentActivitiesQuery(studentId, 5, 0), cancellationToken);
-            var progressDataTask = _mediator.Send(new GetProgressDataQuery(), cancellationToken);
-            var weeklyStudyDataTask = _mediator.Send(new GetWeeklyStudyDataQuery(), cancellationToken);
-            var subjectDistributionTask = _mediator.Send(new GetSubjectDistributionQuery { StudentId = studentId }, cancellationToken);
-
-            // Wait for all tasks to complete
-            await Task.WhenAll(
-                statsTask,
-                recentCoursesTask,
-                upcomingDeadlinesTask,
-                recentActivitiesTask,
-                progressDataTask,
-                weeklyStudyDataTask,
-                subjectDistributionTask
-            );
-
-            // Combine results
-            return new GetStudentDashboardResponse
-            {
-                Stats = await statsTask,
-                RecentCourses = (await recentCoursesTask).Courses,
-                UpcomingDeadlines = (await upcomingDeadlinesTask).Deadlines,
-                RecentActivities = (await recentActivitiesTask).IsSuccess ? (await recentActivitiesTask).Value.activities : new(),
-                ProgressData = (await progressDataTask).ProgressData,
-                WeeklyStudyData = (await weeklyStudyDataTask).WeeklyStudyData,
-                SubjectDistribution = (await subjectDistributionTask).SubjectDistribution
-            };
-        }
+      _mediator = mediator;
     }
+
+    public async Task<GetStudentDashboardResponse> Handle(GetStudentDashboardQuery request, CancellationToken cancellationToken)
+    {
+      // Get all dashboard data in parallel
+      var studentId = request.StudentId;
+
+      var statsTask = _mediator.Send(new GetStudentDashboardStatsQuery { StudentId = studentId }, cancellationToken);
+      var recentCoursesTask = _mediator.Send(new GetRecentCoursesQuery { StudentId = studentId }, cancellationToken);
+      var upcomingDeadlinesTask = _mediator.Send(new GetUpcomingDeadlinesQuery(), cancellationToken);
+      var recentActivitiesTask = _mediator.Send(new GetRecentActivitiesQuery(studentId, 5, 0), cancellationToken);
+      var progressDataTask = _mediator.Send(new GetProgressDataQuery { StudentId = studentId }, cancellationToken);
+      var weeklyStudyDataTask = _mediator.Send(new GetWeeklyStudyDataQuery { StudentId = studentId }, cancellationToken);
+      var subjectDistributionTask = _mediator.Send(new GetSubjectDistributionQuery { StudentId = studentId }, cancellationToken);
+
+      // Wait for all tasks to complete
+      await Task.WhenAll(
+          statsTask,
+          recentCoursesTask,
+          upcomingDeadlinesTask,
+          recentActivitiesTask,
+          progressDataTask,
+          weeklyStudyDataTask,
+          subjectDistributionTask
+      );
+
+      // Combine results
+      return new GetStudentDashboardResponse
+      {
+        Stats = await statsTask,
+        RecentCourses = (await recentCoursesTask).Courses,
+        UpcomingDeadlines = (await upcomingDeadlinesTask).Deadlines,
+        RecentActivities = (await recentActivitiesTask).IsSuccess ? (await recentActivitiesTask).Value.activities : new(),
+        ProgressData = (await progressDataTask).ProgressData,
+        WeeklyStudyData = (await weeklyStudyDataTask).WeeklyStudyData,
+        SubjectDistribution = (await subjectDistributionTask).SubjectDistribution
+      };
+    }
+  }
 }

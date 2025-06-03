@@ -15,7 +15,7 @@ internal sealed class GetUpcomingDeadlines : IEndpoint
 {
   public void MapEndpoint(IEndpointRouteBuilder app)
   {
-    app.MapGet("student/dashboard/deadlines", async (
+    app.MapGet("program/student/dashboard/deadlines", async (
         ISender sender,
         HttpContext httpContext) =>
     {

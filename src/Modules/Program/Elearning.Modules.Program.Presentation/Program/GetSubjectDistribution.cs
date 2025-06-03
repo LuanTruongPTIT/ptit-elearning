@@ -16,7 +16,7 @@ internal sealed class GetSubjectDistribution : IEndpoint
 {
   public void MapEndpoint(IEndpointRouteBuilder app)
   {
-    app.MapGet("student/dashboard/subjects", async (
+    app.MapGet("program/student/dashboard/subjects", async (
         [FromQuery] Guid? studentId,
         ISender sender,
         HttpContext httpContext) =>

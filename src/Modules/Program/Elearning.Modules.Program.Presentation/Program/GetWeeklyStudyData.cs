@@ -15,7 +15,7 @@ internal sealed class GetWeeklyStudyData : IEndpoint
 {
   public void MapEndpoint(IEndpointRouteBuilder app)
   {
-    app.MapGet("student/dashboard/weekly-study", async (
+    app.MapGet("program/student/dashboard/weekly-study", async (
         ISender sender,
         HttpContext httpContext) =>
     {

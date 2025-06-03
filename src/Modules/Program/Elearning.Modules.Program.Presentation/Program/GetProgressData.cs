@@ -15,7 +15,7 @@ internal sealed class GetProgressData : IEndpoint
 {
   public void MapEndpoint(IEndpointRouteBuilder app)
   {
-    app.MapGet("student/dashboard/progress", async (
+    app.MapGet("program/student/dashboard/progress", async (
         ISender sender,
         HttpContext httpContext) =>
     {

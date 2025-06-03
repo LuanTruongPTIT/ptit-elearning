@@ -16,7 +16,7 @@ internal sealed class GetRecentCourses : IEndpoint
 {
   public void MapEndpoint(IEndpointRouteBuilder app)
   {
-    app.MapGet("student/dashboard/recent-courses", async (
+    app.MapGet("program/student/dashboard/recent-courses", async (
         [FromQuery] Guid? studentId,
         ISender sender,
         HttpContext httpContext) =>

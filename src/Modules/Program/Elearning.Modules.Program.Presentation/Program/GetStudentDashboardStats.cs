@@ -16,7 +16,7 @@ internal sealed class GetStudentDashboardStats : IEndpoint
 {
   public void MapEndpoint(IEndpointRouteBuilder app)
   {
-    app.MapGet("student/dashboard/stats", async (
+    app.MapGet("program/student/dashboard/stats", async (
         [FromQuery] Guid? studentId,
         ISender sender,
         HttpContext httpContext) =>

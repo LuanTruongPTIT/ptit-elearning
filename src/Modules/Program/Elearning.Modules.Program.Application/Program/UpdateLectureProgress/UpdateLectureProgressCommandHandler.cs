@@ -10,14 +10,14 @@ internal sealed class UpdateLectureProgressCommandHandler(
     IDbConnectionFactory dbConnectionFactory
 ) : ICommandHandler<UpdateLectureProgressCommand, bool>
 {
-  public async Task<Result<bool>> Handle(UpdateLectureProgressCommand request, CancellationToken cancellationToken)
-  {
-    await using DbConnection connection = await dbConnectionFactory.OpenConnectionAsync();
-
-    try
+    public async Task<Result<bool>> Handle(UpdateLectureProgressCommand request, CancellationToken cancellationToken)
     {
-      // First, check if the lecture exists and get course info
-      const string checkLectureSql = """
+        await using DbConnection connection = await dbConnectionFactory.OpenConnectionAsync();
+
+        try
+        {
+            // First, check if the lecture exists and get course info
+            const string checkLectureSql = """
                 SELECT
                     l.id,
                     l.teaching_assign_course_id,
@@ -26,50 +26,50 @@ internal sealed class UpdateLectureProgressCommandHandler(
                 WHERE l.id = @LectureId AND l.is_published = true;
             """;
 
-      var lectureInfo = await connection.QueryFirstOrDefaultAsync(
-          checkLectureSql,
-          new { request.LectureId }
-      );
+            var lectureInfo = await connection.QueryFirstOrDefaultAsync(
+                checkLectureSql,
+                new { request.LectureId }
+            );
 
-      if (lectureInfo == null)
-      {
-        return Result.Failure<bool>(new Error(
-            "UpdateLectureProgress.LectureNotFound",
-            "Lecture not found or not published",
-            ErrorType.NotFound));
-      }
+            if (lectureInfo == null)
+            {
+                return Result.Failure<bool>(new Error(
+                    "UpdateLectureProgress.LectureNotFound",
+                    "Lecture not found or not published",
+                    ErrorType.NotFound));
+            }
 
-      // Check if student is enrolled in the course
-      const string checkEnrollmentSql = """
+            // Check if student is enrolled in the course
+            const string checkEnrollmentSql = """
                 SELECT 1
                 FROM programs.table_student_course_enrollments sce
                 WHERE sce.student_id = @StudentId
                 AND sce.teaching_assign_course_id = @TeachingAssignCourseId;
             """;
 
-      var isEnrolled = await connection.QueryFirstOrDefaultAsync<int?>(
-          checkEnrollmentSql,
-          new
-          {
-            request.StudentId,
-            TeachingAssignCourseId = lectureInfo.teaching_assign_course_id
-          }
-      );
+            var isEnrolled = await connection.QueryFirstOrDefaultAsync<int?>(
+                checkEnrollmentSql,
+                new
+                {
+                    request.StudentId,
+                    TeachingAssignCourseId = lectureInfo.teaching_assign_course_id
+                }
+            );
 
-      if (isEnrolled == null)
-      {
-        return Result.Failure<bool>(new Error(
-            "UpdateLectureProgress.NotEnrolled",
-            "Student is not enrolled in this course",
-            ErrorType.Authorization));
-      }
+            if (isEnrolled == null)
+            {
+                return Result.Failure<bool>(new Error(
+                    "UpdateLectureProgress.NotEnrolled",
+                    "Student is not enrolled in this course",
+                    ErrorType.Authorization));
+            }
 
-      // Determine if lecture should be marked as completed
-      bool isCompleted = request.ProgressPercentage >= 80; // 80% threshold
+            // Determine if lecture should be marked as completed
+            bool isCompleted = request.ProgressPercentage >= 80; // 80% threshold
 
-      // Insert or update lecture progress
-      const string upsertProgressSql = """
-                INSERT INTO enrollment.table_student_lecture_progresses (
+            // Insert or update lecture progress
+            const string upsertProgressSql = """
+                INSERT INTO programs.table_student_lecture_progress (
                     id,
                     student_id,
                     lecture_id,
@@ -100,52 +100,52 @@ internal sealed class UpdateLectureProgressCommandHandler(
                 RETURNING id;
             """;
 
-      var progressId = await connection.ExecuteScalarAsync<Guid?>(
-          upsertProgressSql,
-          new
-          {
-            request.StudentId,
-            request.LectureId,
-            request.WatchPosition,
-            request.ProgressPercentage,
-            IsCompleted = isCompleted
-          }
-      );
+            var progressId = await connection.ExecuteScalarAsync<Guid?>(
+                upsertProgressSql,
+                new
+                {
+                    request.StudentId,
+                    request.LectureId,
+                    request.WatchPosition,
+                    request.ProgressPercentage,
+                    IsCompleted = isCompleted
+                }
+            );
 
-      if (progressId == null)
-      {
-        return Result.Failure<bool>(new Error(
-            "UpdateLectureProgress.UpdateFailed",
-            "Failed to update lecture progress",
-            ErrorType.Failure));
-      }
+            if (progressId == null)
+            {
+                return Result.Failure<bool>(new Error(
+                    "UpdateLectureProgress.UpdateFailed",
+                    "Failed to update lecture progress",
+                    ErrorType.Failure));
+            }
 
-      // Update course progress if lecture was completed
-      if (isCompleted)
-      {
-        await UpdateCourseProgress(connection, request.StudentId, lectureInfo.teaching_assign_course_id);
-      }
+            // Update course progress if lecture was completed
+            if (isCompleted)
+            {
+                await UpdateCourseProgress(connection, request.StudentId, lectureInfo.teaching_assign_course_id);
+            }
 
-      return Result.Success(true);
+            return Result.Success(true);
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure<bool>(new Error(
+                "UpdateLectureProgress.Error",
+                $"Failed to update lecture progress: {ex.Message}",
+                ErrorType.Failure));
+        }
     }
-    catch (Exception ex)
+
+    private async Task UpdateCourseProgress(DbConnection connection, Guid studentId, Guid teachingAssignCourseId)
     {
-      return Result.Failure<bool>(new Error(
-          "UpdateLectureProgress.Error",
-          $"Failed to update lecture progress: {ex.Message}",
-          ErrorType.Failure));
-    }
-  }
-
-  private async Task UpdateCourseProgress(DbConnection connection, Guid studentId, Guid teachingAssignCourseId)
-  {
-    const string updateCourseProgressSql = """
+        const string updateCourseProgressSql = """
             WITH lecture_stats AS (
                 SELECT
                     COUNT(*) as total_lectures,
                     COUNT(CASE WHEN slp.is_completed = true THEN 1 END) as completed_lectures
                 FROM programs.table_lectures l
-                LEFT JOIN enrollment.table_student_lecture_progresses slp
+                LEFT JOIN programs.table_student_lecture_progress slp
                     ON l.id = slp.lecture_id AND slp.student_id = @StudentId
                 WHERE l.teaching_assign_course_id = @TeachingAssignCourseId
                 AND l.is_published = true
@@ -189,13 +189,13 @@ internal sealed class UpdateLectureProgressCommandHandler(
                 updated_at = CURRENT_TIMESTAMP;
         """;
 
-    await connection.ExecuteAsync(
-        updateCourseProgressSql,
-        new
-        {
-          StudentId = studentId,
-          TeachingAssignCourseId = teachingAssignCourseId
-        }
-    );
-  }
+        await connection.ExecuteAsync(
+            updateCourseProgressSql,
+            new
+            {
+                StudentId = studentId,
+                TeachingAssignCourseId = teachingAssignCourseId
+            }
+        );
+    }
 }

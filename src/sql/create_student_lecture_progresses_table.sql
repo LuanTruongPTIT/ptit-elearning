@@ -21,11 +21,11 @@ CREATE TABLE programs.table_student_course_progress
 -- Tạo các chỉ mục để tối ưu truy vấn
 CREATE INDEX
 IF NOT EXISTS idx_student_lecture_progresses_student_id 
-    ON enrollment.table_student_lecture_progresses
+    ON programs.table_student_lecture_progress
 (student_id);
 CREATE INDEX
 IF NOT EXISTS idx_student_lecture_progresses_lecture_id 
-    ON enrollment.table_student_lecture_progresses
+    ON programs.table_student_lecture_progress
 (lecture_id);
 
 -- Tạo trigger để tự động cập nhật trường updated_at
@@ -40,7 +40,7 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trigger_update_student_lecture_progress_updated_at
 BEFORE
-UPDATE ON enrollment.table_student_lecture_progresses
+UPDATE ON programs.table_student_lecture_progress
 FOR EACH ROW
 EXECUTE FUNCTION enrollment
 .update_student_lecture_progress_updated_at

@@ -32,7 +32,7 @@ public sealed class GetCourseDetailsQueryHandler : IQueryHandler<GetCourseDetail
             slp.lecture_id,
             slp.is_completed
           FROM
-            enrollment.table_student_lecture_progresses slp
+            programs.table_student_lecture_progress slp
           WHERE
             slp.student_id = @student_id
         ),
@@ -120,7 +120,7 @@ public sealed class GetCourseDetailsQueryHandler : IQueryHandler<GetCourseDetail
           FROM
             content_management.table_lectures l
           LEFT JOIN
-            enrollment.table_student_lecture_progresses slp ON l.id = slp.lecture_id AND slp.student_id = @student_id
+            programs.table_student_lecture_progress slp ON l.id = slp.lecture_id AND slp.student_id = @student_id
           WHERE
             l.section_id = @SectionId
           ORDER BY
