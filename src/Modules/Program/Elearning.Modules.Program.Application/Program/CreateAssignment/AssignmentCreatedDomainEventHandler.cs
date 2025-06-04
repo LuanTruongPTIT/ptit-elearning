@@ -84,7 +84,7 @@ internal sealed class AssignmentCreatedDomainEventHandler : DomainEventHandler<A
                 Title = domainEvent.Title,
                 Message = $"Bài tập '{domainEvent.Title}' đã được tạo trong lớp {courseInfo.course_class_name}. Hạn nộp: {domainEvent.Deadline:dd/MM/yyyy HH:mm}",
                 Deadline = domainEvent.Deadline,
-                AssignmentType = "assignment", // You can get this from domainEvent if available
+                AssignmentType = "assignment",
                 NotificationType = "assignment_created"
             };
 
