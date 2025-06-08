@@ -106,8 +106,8 @@ public sealed class GetStudentCourseDetailsQueryHandler : IQueryHandler<GetStude
             // 2. Lấy thông tin về giảng viên
             var instructorSql = @"
         SELECT
-          u.full_name AS teacher_name,
-          u.avatar_url AS avatar
+          u.full_name AS TeacherName,
+          u.avatar_url AS Avatar
         FROM
           programs.table_teaching_assign_courses tac
         JOIN
@@ -132,7 +132,7 @@ public sealed class GetStudentCourseDetailsQueryHandler : IQueryHandler<GetStude
         LEFT JOIN
           programs.table_student_lecture_progress slp ON l.id = slp.lecture_id AND slp.student_id = @StudentId
         WHERE
-          l.teaching_assign_course_id = @CourseId
+          l.teaching_assign_course_id = @CourseId AND l.material_type = 'Lecture'
       ";
 
             var lectures = await connection.QueryAsync<LectureDto>(lecturesSql, parameters);
@@ -148,7 +148,7 @@ public sealed class GetStudentCourseDetailsQueryHandler : IQueryHandler<GetStude
           programs.table_lectures l
         WHERE
           l.teaching_assign_course_id = @CourseId
-          AND l.content_type IN ('Assignment', 'Resource', 'Exam')
+          AND l.material_type IN ('Assignment', 'Resource', 'Exam')
         ORDER BY
           l.created_at DESC
       ";

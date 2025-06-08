@@ -74,13 +74,17 @@ internal sealed class GetTeachersQueryHandler(
                 u.id,
                 u.full_name as name,
                 u.email,
-                u.phone_number,
-                u.created_at as join_date,
-                u.account_status as status,
-                COALESCE(d.name, 'Chưa xác định') as department,
-                COALESCE(ts.courses_count, 0) as courses_count,
-                COALESCE(ts.students_count, 0) as students_count,
-                COALESCE(ts.rating, 4.0) as rating
+                u.phone_number as PhoneNumber,
+                u.created_at as JoinDate,
+                        CASE u.account_status
+                   WHEN 1 THEN 'Active'
+                   WHEN 0 THEN 'Inactive'
+                   ELSE 'Unknown'
+               END as status,
+                COALESCE(d.name, 'Chưa xác định') as Department,
+                COALESCE(ts.courses_count, 0) as CoursesCount,
+                COALESCE(ts.students_count, 0) as StudentsCount,
+                COALESCE(ts.rating, 4.0) as Rating
             FROM users.table_users u
             JOIN users.table_user_roles ur ON u.id = ur.user_id
             LEFT JOIN programs.table_teaching_assign_courses tac ON u.id = tac.teacher_id
