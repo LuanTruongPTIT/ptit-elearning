@@ -72,7 +72,7 @@ internal sealed class GetStudentsQueryHandler(
                 u.email,
                 u.phone_number AS PhoneNumber,
                 u.date_of_birth,
-                u.created_at as enrollment_date,
+                u.created_at as EnrollmentDate,
                CASE u.account_status
                    WHEN 1 THEN 'Active'
                    WHEN 0 THEN 'Inactive'
