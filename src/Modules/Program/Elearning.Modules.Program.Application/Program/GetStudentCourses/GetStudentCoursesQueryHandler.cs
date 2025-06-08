@@ -10,13 +10,13 @@ internal sealed class GetStudentCoursesQueryHandler(
     IDbConnectionFactory dbConnectionFactory
 ) : IQueryHandler<GetStudentCoursesQuery, List<GetStudentCoursesResponse>>
 {
-  public async Task<Result<List<GetStudentCoursesResponse>>> Handle(
-      GetStudentCoursesQuery request,
-      CancellationToken cancellationToken)
-  {
-    await using DbConnection connection = await dbConnectionFactory.OpenConnectionAsync();
+    public async Task<Result<List<GetStudentCoursesResponse>>> Handle(
+        GetStudentCoursesQuery request,
+        CancellationToken cancellationToken)
+    {
+        await using DbConnection connection = await dbConnectionFactory.OpenConnectionAsync();
 
-    const string sql = """
+        const string sql = """
             -- First, find the student's program
             WITH student_program AS (
                 SELECT
@@ -72,7 +72,7 @@ internal sealed class GetStudentCoursesQueryHandler(
                     AND slp.student_id = @student_id
                 WHERE
                     l.teaching_assign_course_id IN (SELECT teaching_assign_course_id FROM student_courses)
-                    AND l.is_published = true
+                    AND l.is_published = true AND l.material_type = 'Lecture'
             ),
             lecture_counts AS (
                 SELECT
@@ -152,19 +152,20 @@ internal sealed class GetStudentCoursesQueryHandler(
                 sc.start_date DESC
         """;
 
-    try
-    {
-      var result = await connection.QueryAsync<GetStudentCoursesResponse>(
-          sql,
-          new { request.student_id }
-      );
+        try
+        {
+            var result = await connection.QueryAsync<GetStudentCoursesResponse>(
+                sql,
+                new { request.student_id }
+            );
 
-      return Result.Success(result.ToList());
+            return Result.Success(result.ToList());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            return Result.Failure<List<GetStudentCoursesResponse>>(
+                Error.Failure("GetStudentCourses.Error", ex.Message));
+        }
     }
-    catch (Exception ex)
-    {
-      return Result.Failure<List<GetStudentCoursesResponse>>(
-          Error.Failure("GetStudentCourses.Error", ex.Message));
-    }
-  }
 }
